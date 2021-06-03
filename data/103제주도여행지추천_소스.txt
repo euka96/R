@@ -1,0 +1,72 @@
+#setwd("c:\\temp") 
+#install.packages("KoNLP") 
+#install.packages("wordcloud") 
+#install.packages("stringr")	# <- 패키지를 설치합니다
+
+library(KoNLP)  
+library(wordcloud)
+library(stringr)  # <- 패키지를 로딩합니다
+
+useSejongDic() 
+
+# 위 사전에 제주도 관광지명이 정확하게 안 들어 있기 때문에 아래와 같이 수동으로 추가합니다.
+mergeUserDic(data.frame(readLines("제주도사전.txt"), "ncn"))
+
+# 분석할 파일을 불러와서 txt 변수에 저장합니다.
+txt <- readLines("103제주도원본.txt") 
+
+#중복되는 행 제거하기
+txt2 <- unique(txt)
+
+# 명사만 추출합니다
+place <- extractNoun(txt2)
+head(place,5)
+
+place <- lapply(place, unique) # 1 줄안에서 중복되는 단어 제거하기 
+
+# 불용어를 찾기 위해서 현재 상태의 단어 중 많이 언급된 순서로 100개 출력확인
+wordcount <- table(unlist(place)) 
+head(sort(wordcount2, decreasing=T),100)
+   
+cdata <- unlist(place) 
+place <- str_replace_all(cdata,"[^[:alpha:][:blank:] ]","")
+place <- gsub("랜드","", place)
+place <- gsub("에코","에코랜드", place) 
+place <- gsub("퍼시픽","퍼시픽랜드", place) 
+place <- gsub("이곳","", place)
+place <- gsub("구석","", place)
+place <- gsub("구석","", place)
+place <- gsub("생각","", place)
+place <- gsub("한라","한라산", place)
+place <- gsub("산방","산방산", place)
+place <- gsub("애월","애월읍", place)
+place <- gsub(paste(c("성산","일출"),collapse='|'), "성산일출봉", place)
+place <- gsub(paste(c("녹차","오설록"),collapse='|'), "오설록", place)
+place <- gsub(paste(c("천지","연폭","천지연폭포"),collapse='|'), "천지연폭포", place)
+place <- gsub(paste(c("주상","절리","주상절리"),collapse='|'), "주상절리", place)
+
+#불용어를 제거합니다
+txt <- readLines("제주도gsub.txt")
+txt
+cnt_txt <- length(txt)
+cnt_txt
+i <- 1
+for( i in 1:cnt_txt) {
+      place <-gsub((txt[i]),"",place)     
+      }
+place
+place <- Filter(function(x) {nchar(x) >= 2 & nchar(x) <= 10} ,place)
+
+wordcount <- table(unlist(place) ) 
+data11 <- head(sort(wordcount, decreasing=T),40)
+#write.csv(data11 , '연습.csv')
+
+
+# 추출된 단어들을 워드 클라우드로 시각화 하기 
+palete <- brewer.pal(7,"Set1") 
+wordcloud(names(wordcount),freq=wordcount,scale=c(5,1),rot.per=0.25,min.freq=4,
+  random.order=F,random.color=T,colors=palete)
+#savePlot('연습.png' , type='png')
+
+
+

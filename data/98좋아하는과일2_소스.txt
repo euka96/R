@@ -1,0 +1,79 @@
+#setwd("c:\\Temp")    
+
+install.packages("KoNLP")   
+install.packages("wordcloud")   
+install.packages("stringr")  
+
+library(KoNLP)    
+library(wordcloud)  
+library(stringr)  
+
+useSejongDic()  
+#Step 2. 분석할 파일을 불러옵니다 >
+data1 <- readLines("98좋아하는과일2.txt")  
+data1
+
+#Step 3. 중복되는 리뷰를 제거해야 할 경우 
+data1 <- unique(data1)
+data1
+
+ #Step 4. 특수 문자 모두 제거합니다. 
+data1 <- str_replace_all(data1,"[^[:alpha:][:blank:]]","")
+data1 
+
+ #Step 5. 아래 과정이 불러온 리뷰 문장을 단어로 분리하는 과정입니다.
+data2 <- extractNoun(data1)
+data2 
+
+ #Step 6. 한 줄 안에서 중복되는 단어를 제거해야 할 경우 아래의 명령을 수행합니다. 
+data2 <- sapply(data2, unique)
+data2 
+
+#Step 7. 띄어 쓰기가 안되어 있는 긴 문장(단어)을 제거해야 할 경우 아래 명령을 수행합니다. 
+# 이 작업을 하는 명령어는 Filter( ) 함수인데 벡터로 데이터를 넣아야 합니다. 
+# 그래서 unlist( ) 함수로 list( ) 형태의 데이터를 벡터 형태로 변형해야 합니다.
+data3 <- unlist(data2) 
+data3
+head(data3,5) 
+
+data4 <- Filter(function(x) {nchar(x) <= 20 & nchar(x) > 1} , data3) 
+data4
+
+#Step 8. 아래 과정이 필요 없는 단어들이나 기호를 제거하는 과정입니다.
+
+data4 <- gsub("\\.","",data4) 
+data4 <- gsub(" ","",data4) 
+data4 <- gsub("\\' ","",data4)
+data4 <- gsub("\\^","",data4) 
+#data4 <- gsub("포도","청포도",data4) 
+
+ #Step 9. 추출된 키워드를 임시로 확인하기 위해 집계해 봅니다.
+wordcount <- table(data4)
+head(sort(wordcount, decreasing=T),50)
+
+txt <- readLines("111좋아하는과일gsub.txt") 
+cnt_txt <- length(txt)
+cnt_txt
+
+
+for( i in 1:cnt_txt) {
+      data4 <-gsub((txt[i]),"",data4)      
+      } 
+data4 
+
+
+data4 <- Filter(function(x) {nchar(x) <= 10 & nchar(x) > 1} ,data4)
+data4
+
+#Step10. 최종결과를 집계하여 워드 클라우드로 시각화
+
+wordcount <- table(data4)
+wordcount 
+
+head(sort(wordcount, decreasing=T),50) 
+data4 
+
+#Step11.
+palete <- brewer.pal(9,"Set3")  
+wordcloud(names(wordcount),freq=wordcount,scale=c(5,1),rot.per=0.25,min.freq=1, random.order=F,random.color=T,colors=palete)
+

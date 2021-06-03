@@ -1,0 +1,11 @@
+## ORA-12345: ~~  에서 숫자까지만 잘라내서 워드 클라우드 그리기
+alert11 <- readLines("oracle_alert_testdb.log") 
+alert12 <- grep("^ORA-+",alert11,value=T)  #ORA-12345 형식으로 된 줄만 걸러냄
+alert13 <- substr(alert12,1,9) 
+errorcount1 <- table(alert13)  
+head(sort(errorcount1, decreasing=T),20)
+
+library(RColorBrewer) 
+palete <- brewer.pal(7,"Set1") 
+wordcloud(names(errorcount1),freq=errorcount1,scale=c(5,1),rot.per=0.25,min.freq=3,
+ random.order=F,random.color=T,colors=palete)
